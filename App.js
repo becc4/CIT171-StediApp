@@ -1,10 +1,11 @@
 import React, { useEffect, useState, } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, AsyncStorage, TextInput, Button} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Button} from 'react-native';
 import  Navigation from './components/Navigation';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from './screens/OnboardingScreen';
 import Home from './screens/Home';
 import { NavigationContainer } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const AppStack = createNativeStackNavigator();
@@ -36,12 +37,13 @@ const App = () =>{
         placeholder = 'Phone Number'
         value = {phoneNumber}
         onChangeText = {setPhoneNumber}
+        keyboardType = "numeric"
       >
       </TextInput>
       <Button
       title = 'Send'
         style={styles.button}
-        onPress={async()=> {
+        onPress={async() => {
           console.log("Button was pressed!")
           await fetch(
             "https://dev.stedi.me/twofactorlogin/" + phoneNumber,
@@ -73,19 +75,31 @@ const App = () =>{
         style={styles.button}
         onPress={async()=> {
           console.log("Login Button was pressed!")
-          await fetch(
-            "https://dev.stedi.me/twofactorlogin",
-            {
+          const loginResponse=await fetch("https://dev.stedi.me/twofactorlogin", {
               method:'POST',
-              header: {
+              headers: {
                 'content-type': 'application/text'
-              }
-              body: 
+              },
+              body:JSON.stringify({
+                phoneNumber,
+                oneTimePassword
+              })
+            });
+            if (loginResponse.status==200){ //200 means password was valid
+              setLoggedInState(loggedInStates.LOGGED_IN);
+            } else {
+              setLoggedInState(loggedInStates.NOT_LOGGED_IN);
             }
-            )
-          setLoggedInState(loggedInStates.CODE_SENT)
+          //setLoggedInState.apply(loggedInStates.CODE_SENT)
         }}
       />
+      <Button // Added a back button because I thought it would be cool
+        title = "Back"
+        style = {styles.button}
+        onPress = {async() => {
+          console.log("Back button pressed!")
+          setLoggedInState(loggedInStates.NOT_LOGGED_IN)
+        }}/>
     </View>
   )}
 }
