@@ -10,6 +10,7 @@ import { Card, CardTitle, CardContent, CardAction, CardButton, CardImage, button
 import exerciseImg from '../image/exercise2.png';
 import ProgressBar from 'react-native-progress/Bar';
 import { FontAwesome5 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { Ionicons} from 'react-native-vector-icons';
 // import { Button } from 'react-native-elements';
 // import { IconButton } from 'react-native-paper';
@@ -88,13 +89,13 @@ stepPoints  = [];
    previousTime = stepObject.time;
    stepPoints.push(stepTime);
 }); 
-stepPoints.length=30;
+//stepPoints.length=30;
   try{
-    const sessionToken = await AsyncStorage.getItem('sessionToken');
-    const userName = await AsyncStorage.getItem('userName');
-    token.current = sessionToken;
+    token.current = await AsyncStorage.getItem('sessionToken');
+    userName.current = await AsyncStorage.getItem('userName');
+    //token.current = sessionToken;
+console.log('token:' ,token.current);
 
-console.log('token counter:' ,token.current);
 await fetch('https://dev.stedi.me/rapidsteptest',{
   method:'POST',
   headers:{
@@ -121,7 +122,10 @@ await fetch('https://dev.stedi.me/rapidsteptest',{
 const getResults = async () =>{
 
 try{
-  const scoreResponse = await fetch('https://dev.stedi.me/riskscore/' + userName.currect,{
+  console.log('UserName:'+userName.current);
+  console.log('Token before calling score:'+token.current);
+  
+  const scoreResponse = await fetch('https://dev.stedi.me/riskscore/' + userName.current,{
   method:'GET',
   headers:{
     'Content-Type': 'application/json',
@@ -131,9 +135,10 @@ try{
 const scoreObject = await scoreResponse.json();
 console.log("score:",scoreObject.score);
 setScore(scoreObject.score);
-props.setHomeTodayScore(scoreObject.score);
+//props.setHomeTodayScore(scoreObject.score);
+
 }catch(error){
-  console.log('error', error);
+  console.log('score error', error);
  }
 }
 
